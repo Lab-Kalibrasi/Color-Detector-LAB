@@ -10,7 +10,7 @@ import android.widget.TextView
 import com.doctorblue.colordetector.R
 import com.doctorblue.colordetector.model.UserColor
 import com.google.android.material.button.MaterialButton
-
+data class LabColor(val L: Int, val a: Int, val b: Int)
 class ColorDetailDialog(
     context: Context,
     private val color: UserColor,
@@ -21,6 +21,7 @@ class ColorDetailDialog(
     private lateinit var txt_rgb: TextView;
     private lateinit var txt_hex: TextView;
     private lateinit var txt_hsl: TextView;
+    private lateinit var txt_lab: TextView;
     private lateinit var btn_cancel: MaterialButton;
     private lateinit var btn_remove_color: MaterialButton;
 
@@ -33,14 +34,17 @@ class ColorDetailDialog(
         txt_rgb = findViewById(R.id.txt_rgb)
         txt_hex = findViewById(R.id.txt_hex)
         txt_hsl = findViewById(R.id.txt_hsl)
+        txt_lab = findViewById(R.id.txt_lab)
         btn_cancel = findViewById(R.id.btn_cancel)
         btn_remove_color = findViewById(R.id.btn_remove_color)
 
         view_color_preview.setBackgroundColor(Color.parseColor(color.hex))
+        val labColor = rgbToLab(color.r.toInt(), color.g.toInt(), color.b.toInt())
 
-        txt_rgb.text = ("RGB(${color.r}, ${color.g}, ${color.b})")
+        txt_rgb.text = ("RGB: (${color.r}, ${color.g}, ${color.b})")
         txt_hex.text = ("Hex : ${color.hex}")
-        txt_hsl.text = ("HSL(${color.h}, ${color.s}, ${color.l})")
+        txt_hsl.text = ("HSL: (${color.h}, ${color.s}, ${color.l})")
+        txt_lab.text = ("LAB Color: (${labColor.L},${labColor.a},${labColor.b})")
 
 
         btn_cancel.setOnClickListener { dismiss() }
@@ -50,5 +54,36 @@ class ColorDetailDialog(
             dismiss()
         }
 
+    }
+    fun rgbToLab(r: Int, g: Int, b: Int): LabColor {
+        val rLinear = r / 255.0
+        val gLinear = g / 255.0
+        val bLinear = b / 255.0
+
+        val rSrgb = if (rLinear <= 0.04045) rLinear / 12.92 else Math.pow((rLinear + 0.055) / 1.055, 2.4)
+        val gSrgb = if (gLinear <= 0.04045) gLinear / 12.92 else Math.pow((gLinear + 0.055) / 1.055, 2.4)
+        val bSrgb = if (bLinear <= 0.04045) bLinear / 12.92 else Math.pow((bLinear + 0.055) / 1.055, 2.4)
+
+        val x = rSrgb * 0.4124564 + gSrgb * 0.3575761 + bSrgb * 0.1804375
+        val y = rSrgb * 0.2126729 + gSrgb * 0.7151522 + bSrgb * 0.0721750
+        val z = rSrgb * 0.0193339 + gSrgb * 0.1191920 + bSrgb * 0.9503041
+
+        val xR = x /  0.95047
+        val yR = y /  1.00000
+        val zR = z / 1.08883
+
+        val fX = if (xR > 0.008856) Math.cbrt(xR) else (903.3 * xR + 16) / 116
+        val fY = if (yR > 0.008856) Math.cbrt(yR) else (903.3 * yR + 16) / 116
+        val fZ = if (zR > 0.008856) Math.cbrt(zR) else (903.3 * zR + 16) / 116
+
+        val L = 116 * fY - 16
+        val a = 500 * (fX - fY)
+        val b = 200 * (fY - fZ)
+
+        val roundedL = L.toInt()
+        val roundedA = a.toInt()
+        val roundedB = b.toInt()
+
+        return LabColor(roundedL, roundedA, roundedB)
     }
 }

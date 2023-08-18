@@ -10,7 +10,7 @@ import android.widget.TextView
 import com.doctorblue.colordetector.R
 import com.doctorblue.colordetector.model.UserColor
 import com.google.android.material.button.MaterialButton
-data class LabColor(val L: Int, val a: Int, val b: Int)
+data class LabColor(val L: Double, val a: Double, val b: Double)
 class ColorDetailDialog(
     context: Context,
     private val color: UserColor,
@@ -41,11 +41,10 @@ class ColorDetailDialog(
         view_color_preview.setBackgroundColor(Color.parseColor(color.hex))
         val labColor = rgbToLab(color.r.toInt(), color.g.toInt(), color.b.toInt())
 
-        txt_rgb.text = ("RGB: (${color.r}, ${color.g}, ${color.b})")
-        txt_hex.text = ("Hex : ${color.hex}")
-        txt_hsl.text = ("HSL: (${color.h}, ${color.s}, ${color.l})")
-        txt_lab.text = ("LAB Color: (${labColor.L},${labColor.a},${labColor.b})")
-
+        //txt_rgb.text = ("RGB : (${color.r}, ${color.g}, ${color.b})")
+        //txt_hex.text = ("Hex : ${color.hex}")
+        //txt_hsl.text = ("HSL : (${color.h}, ${color.s}, ${color.l})")
+        txt_lab.text = ("LAB : L=%.2f, a=%.2f, b=%.2f".format(labColor.L, labColor.a, labColor.b))
 
         btn_cancel.setOnClickListener { dismiss() }
 
@@ -76,14 +75,14 @@ class ColorDetailDialog(
         val fY = if (yR > 0.008856) Math.cbrt(yR) else (903.3 * yR + 16) / 116
         val fZ = if (zR > 0.008856) Math.cbrt(zR) else (903.3 * zR + 16) / 116
 
-        val L = 116 * fY - 16
-        val a = 500 * (fX - fY)
-        val b = 200 * (fY - fZ)
+        //val L = 116 * fY - 16
+        //val a = 500 * (fX - fY)
+        //val b = 200 * (fY - fZ)
 
-        val roundedL = L.toInt()
-        val roundedA = a.toInt()
-        val roundedB = b.toInt()
+        //val roundedL = L.toInt()
+        //val roundedA = a.toInt()
+        //val roundedB = b.toInt()
 
-        return LabColor(roundedL, roundedA, roundedB)
+        return LabColor(((116 * y) - 16), (500 * (x - y)), (200 * (y - z)))
     }
 }
